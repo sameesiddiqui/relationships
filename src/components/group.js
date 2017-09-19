@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import Person from './person'
+import uuid from 'uuid/v4'
 
 export default class Group extends Component {
   constructor () {
@@ -15,33 +16,36 @@ export default class Group extends Component {
     this.handleSaveChanges = this.handleSaveChanges.bind(this)
   }
 
-  handleSaveChanges (e, className, value) {
-    let item = document.querySelector('.' + className)
+  handleSaveChanges (e, nameField, dateField, name, date, className) {
     // when enter is pressed
     if (e.which === 13) {
       e.preventDefault()
       // nothing to update in the state
-      if (item.innerHTML === value) {
+      if (nameField.value === name && dateField.value === date) {
         return
       }
 
       // trying to save a null value, dont save anything
-      if (item.innerHTML === '') {
-        item.innerHTML = value
+      if (nameField.value === '' || dateField.value === '') {
+        nameField.value = name
+        dateField.value = date
       } else {
         // update persons state in people array
         let people = this.state.people
         let index = parseInt(className.replace('person', ''), 10)
-        people[index] = {name: item.innerHTML}
+        people[index] = {
+          name: nameField.value,
+          lastContacted: dateField.value
+        }
 
         // add a new row to add a person if this was the last spot
-        if (value === '+' && item.innerHTML !== '+') {
+        if (name === '+' && nameField.value !== '+') {
           people.push({name: '+'})
         }
 
         // simulates saving to DB
         this.setState({people})
-        console.log(item.innerHTML, ' saved!')
+        console.log(people[index], ' saved!')
       }
     }
   }
@@ -50,17 +54,17 @@ export default class Group extends Component {
     let list = people.map((person, num) => {
       // new class for every item, for accessing later
       let className = 'person' + num
-      let listItem = person.name
-      if (person.lastContacted) {
-        listItem += ' - ' + person.lastContacted
-      }
+      let name = person.name
+      let date = person.lastContacted
 
       // add person to list with ability to edit
       return (
         <Person
+          key={uuid()}
           className={className}
-          onKeyPress={(e) => this.handleSaveChanges(e, className, listItem)}
-          listItem={listItem}
+          onKeyPress={this.handleSaveChanges}
+          name={name}
+          date={date}
         />
       )
     })
@@ -72,11 +76,11 @@ export default class Group extends Component {
       people: [
         {
           name: 'kanye west',
-          lastContacted: '9/1'
+          lastContacted: '2017-09-01'
         },
         {
           name: 'john cena',
-          lastContacted: 'summer slam'
+          lastContacted: '2017-09-01'
         },
         {
           name: '+'
